@@ -12,6 +12,7 @@ Built with Streamlit, this tool allows you to compare two different prompt versi
 - 🌡️ Adjustable temperature (0.0-1.0)
 - ⏱️ Inference time measurement
 - 💾 Prompt save and reset functionality
+- 🎈 You can know about the inference time and the result of the prompt with model's thinking process.
 
 ## 🎮 Demo
 

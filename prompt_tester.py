@@ -16,7 +16,7 @@ class LLM_Response:
             api_key=os.getenv("API_KEY") # LLM server api key
         )
         
-    def model_completion(self, model_name, system_prompt, human_prompt, temperature):
+    def model_completion(self, model_name, system_prompt, human_prompt, temperature, max_tokens=300):
         start_time = time()
         response = self.client.chat.completions.create(
             model = model_name,
@@ -25,7 +25,7 @@ class LLM_Response:
                 {"role": "user", "content": human_prompt}
             ],
             temperature=temperature,
-            max_tokens=300,
+            max_tokens=max_tokens,
         )
         get_response = response.choices[0].message.content.strip().lower()
         end_time = time()
@@ -89,6 +89,7 @@ class Prompt_Tester:
             st.subheader("Execute Repetations")
             self.num_tests = st.slider("Repetations", min_value=1, max_value=10, value=1)
             self.temperature = st.slider("Temperature", min_value=0.0, max_value=1.0, value=0.56, step=0.1)
+            self.max_tokens = st.number_input("Max Tokens", min_value=100, max_value=1000, value=300, step=10)
             
     def main(self):
 
@@ -148,7 +149,7 @@ class Prompt_Tester:
                     with col1:
                         with st.expander(f"Prompt 1 #{i+1}", expanded=True):
                             llm_response = LLM_Response()
-                            get_response1, inference_time1 = llm_response.model_completion(self.model_name, system_prompt1, human_prompt1, self.temperature)
+                            get_response1, inference_time1 = llm_response.model_completion(self.model_name, system_prompt1, human_prompt1, self.temperature, self.max_tokens)
                             st.markdown("**😊 Model Output:**")
                             st.write(get_response1)
                             st.write("-"*100)
@@ -158,7 +159,7 @@ class Prompt_Tester:
                     with col2:
                         with st.expander(f"Prompt 2 #{i+1}", expanded=True):
                             llm_response = LLM_Response()
-                            get_response2, inference_time2 = llm_response.model_completion(self.model_name, system_prompt2, human_prompt2, self.temperature)
+                            get_response2, inference_time2 = llm_response.model_completion(self.model_name, system_prompt2, human_prompt2, self.temperature, self.max_tokens)
                             st.markdown("**😊 Model Output:**")
                             st.write(get_response2)
                             st.write("-"*100)
@@ -175,7 +176,7 @@ class Prompt_Tester:
             )
             
             human_prompt = st.text_area(
-                "HUMAN",
+                "HUMAN(USER)",
                 height=300,
                 placeholder="Write the Human Prompt...",
                 key="human_prompt"
@@ -195,7 +196,7 @@ class Prompt_Tester:
                 for i in range(self.num_tests):
                     with st.expander(f"✏ 테스트 #{i+1}", expanded=True):
                         llm_response = LLM_Response()
-                        get_response, inference_time = llm_response.model_completion(self.model_name, system_prompt, human_prompt, self.temperature)
+                        get_response, inference_time = llm_response.model_completion(self.model_name, system_prompt, human_prompt, self.temperature, self.max_tokens)
                         st.markdown("**😊 Model Output:**")
                         st.write(get_response)
                         st.write("-"*100)
