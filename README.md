@@ -1,23 +1,23 @@
-# Prompt Tester
+# 🎯 Prompt Tester
 
 A local LLM prompt testing tool inspired by LangSmith Prompter Test.
 <br>
 Built with Streamlit, this tool allows you to compare two different prompt versions or test a single prompt multiple times.
 
-## Features
+## ✨ Features
 
-- Support for single/double prompt testing
-- Separate system and human prompt inputs
-- Multiple test iterations (up to 10)
-- Adjustable temperature (0.0-1.0)
-- Inference time measurement
-- Prompt save and reset functionality
+- 📝 Support for single/double prompt testing
+- 🔄 Separate system and human prompt inputs
+- 🔁 Multiple test iterations (up to 10)
+- 🌡️ Adjustable temperature (0.0-1.0)
+- ⏱️ Inference time measurement
+- 💾 Prompt save and reset functionality
 
-## Demo
+## 🎮 Demo
 
 This tool works with any OpenAI API-compatible LLM server (e.g., sglang, VLLM).
 
-### Test Single Prompt
+### 🔍 Test Single Prompt
 
 ![test1](readme_imgs/image1.png)
 
@@ -25,13 +25,13 @@ This tool works with any OpenAI API-compatible LLM server (e.g., sglang, VLLM).
 - Input system and human prompts
 - Run multiple iterations
 
-### Test Double Prompt
+### 🔄 Test Double Prompt
 
 - Compare two different prompt sets side by side
 - View results simultaneously
 - Compare inference times
 
-## Installation & Usage
+## 🚀 Installation & Usage
 
 1. Install requirements
 
@@ -59,7 +59,7 @@ streamlit run prompt_tester.py
 http://localhost:8501
 ```
 
-## Requirements
+## 📋 Requirements
 
 - Python 3.8+
 - OpenAI API compatible LLM server
@@ -67,9 +67,9 @@ http://localhost:8501
 - python-dotenv
 - openai
 
-## Notes
+## 📝 Notes
 
-- Compatible with OpenAI API format LLM servers
-- Default model: "./Qwen2.5-32B-Instruct-AWQ"
-- Default temperature: 0.56
-- Max tokens: 300
+- 🔌 Compatible with OpenAI API format LLM servers
+- 🤖 Default model: "./Qwen2.5-32B-Instruct-AWQ"
+- 🎚️ Default temperature: 0.56
+- 📊 Max tokens: 300
