@@ -1,24 +1,25 @@
 import streamlit as st
-from openai import OpenAI
+import asyncio
+from openai import AsyncOpenAI
 import time, os
 from dotenv import load_dotenv
 from time import time
 
 load_dotenv()
 
-class LLM_Response:
+class LLMResponse:
     """
     LLM_Response class, define the llm client
     """
     def __init__(self):
-        self.client = OpenAI(
+        self.client = AsyncOpenAI(
             base_url=os.getenv("BASE_URL"), # LLM server url. if you use OpenAI API, you can leave it blank.
             api_key=os.getenv("API_KEY") # LLM server api key
         )
         
-    def model_completion(self, model_name, system_prompt, human_prompt, temperature, max_tokens=300):
+    async def model_completion(self, model_name, system_prompt, human_prompt, temperature, max_tokens=300):
         start_time = time()
-        response = self.client.chat.completions.create(
+        response = await self.client.chat.completions.create(
             model = model_name,
             messages = [
                 {"role": "system", "content": system_prompt},
@@ -33,7 +34,7 @@ class LLM_Response:
         return get_response, inference_time
 
 
-class Prompt_Tester:
+class PromptTester:
     """
     Prompt_Tester class, define the UI
     """
@@ -71,17 +72,20 @@ class Prompt_Tester:
         if 'human_prompt2_saved' not in st.session_state:
             st.session_state['human_prompt2_saved'] = ""
         
+        if 'compare_prompts' not in st.session_state:
+            st.session_state['compare_prompts'] = False
+        
         with st.sidebar:
             button_col1, button_col2 = st.columns([1, 1])
             
             with button_col1:
-                self.compare_prompts = st.button("Add Prompt")
-                st.session_state['compare_prompts'] = self.compare_prompts
+                def toggle_compare():
+                    st.session_state['compare_prompts'] = not st.session_state['compare_prompts']
+                st.button("Add Prompt", on_click=toggle_compare)
             with button_col2:   
-                if st.button("Clear"):
+                def clear_state():
                     st.session_state['compare_prompts'] = False
-                    print(st.session_state)
-                
+                st.button("Clear", on_click=clear_state)
             st.header("Prompt Settings")
             self.model_name = st.text_input("Model Name", value="./Qwen2.5-32B-Instruct-AWQ")
             
@@ -94,6 +98,7 @@ class Prompt_Tester:
     def main(self):
 
         if st.session_state['compare_prompts']:
+            print(st.session_state)
             col1, col2 = st.columns(2)
             
             with col1:
@@ -101,7 +106,7 @@ class Prompt_Tester:
                 system_prompt1 = st.text_area(
                     "SYSTEM 1",
                     value=st.session_state.system_prompt1_saved or st.session_state.system_prompt_saved,
-                    height=50,
+                    height=68,
                     placeholder="Write the System Prompt...",
                     key="system_prompt1"
                 )
@@ -121,7 +126,7 @@ class Prompt_Tester:
                 system_prompt2 = st.text_area(
                     "SYSTEM 2",
                     value=st.session_state.system_prompt2_saved or st.session_state.system_prompt_saved,
-                    height=50,
+                    height=68,
                     placeholder="Write the System Prompt...",
                     key="system_prompt2"
                 )
@@ -135,7 +140,9 @@ class Prompt_Tester:
                 )
                 st.session_state.human_prompt2_saved = human_prompt2
                 
-            if st.button("테스트 실행2"):
+            if st.button("테스트 실행", key="run_test_double"):
+                print("버튼 클릭함")
+                print(f"버튼 클릭시 {st.session_state}")
                 if not (system_prompt1 and human_prompt1) or not (system_prompt2 and human_prompt2):
                     st.warning("프롬프트를 모두 입력해주세요.")
                     return
@@ -145,11 +152,21 @@ class Prompt_Tester:
                 
                 for i in range(self.num_tests):
                     col1, col2 = st.columns(2)
+                    llm_response = LLMResponse()
+                    
+                    async def run_completions():
+                        tasks = [
+                            llm_response.model_completion(self.model_name, system_prompt1, human_prompt1, self.temperature, self.max_tokens),   
+                            llm_response.model_completion(self.model_name, system_prompt2, human_prompt2, self.temperature, self.max_tokens)
+                        ]
+                        return await asyncio.gather(*tasks)
+                    
+                    results = asyncio.run(run_completions())
+                    get_response1, inference_time1 = results[0]
+                    get_response2, inference_time2 = results[1]
                     
                     with col1:
                         with st.expander(f"Prompt 1 #{i+1}", expanded=True):
-                            llm_response = LLM_Response()
-                            get_response1, inference_time1 = llm_response.model_completion(self.model_name, system_prompt1, human_prompt1, self.temperature, self.max_tokens)
                             st.markdown("**😊 Model Output:**")
                             st.write(get_response1)
                             st.write("-"*100)
@@ -158,8 +175,6 @@ class Prompt_Tester:
                                 
                     with col2:
                         with st.expander(f"Prompt 2 #{i+1}", expanded=True):
-                            llm_response = LLM_Response()
-                            get_response2, inference_time2 = llm_response.model_completion(self.model_name, system_prompt2, human_prompt2, self.temperature, self.max_tokens)
                             st.markdown("**😊 Model Output:**")
                             st.write(get_response2)
                             st.write("-"*100)
@@ -170,7 +185,7 @@ class Prompt_Tester:
             # 기존의 단일 프롬프트 입력 UI
             system_prompt = st.text_area(
                 "SYSTEM",
-                height=50,
+                height=68,
                 placeholder="Write the System Prompt...",
                 key="system_prompt"
             )
@@ -186,7 +201,7 @@ class Prompt_Tester:
             st.session_state.system_prompt_saved = system_prompt
             st.session_state.human_prompt_saved = human_prompt
             
-            if st.button("테스트 실행"):
+            if st.button("테스트 실행", key="run_test_single"):
                 if not system_prompt or not human_prompt:
                     st.warning("프롬프트를 모두 입력해주세요.")
                     return
@@ -195,8 +210,18 @@ class Prompt_Tester:
                 
                 for i in range(self.num_tests):
                     with st.expander(f"✏ 테스트 #{i+1}", expanded=True):
-                        llm_response = LLM_Response()
-                        get_response, inference_time = llm_response.model_completion(self.model_name, system_prompt, human_prompt, self.temperature, self.max_tokens)
+                        llm_response = LLMResponse()
+                        
+                        async def run_completion():
+                            return await llm_response.model_completion(
+                                self.model_name, 
+                                system_prompt, 
+                                human_prompt, 
+                                self.temperature, 
+                                self.max_tokens
+                            )
+                        
+                        get_response, inference_time = asyncio.run(run_completion())
                         st.markdown("**😊 Model Output:**")
                         st.write(get_response)
                         st.write("-"*100)
@@ -204,5 +229,5 @@ class Prompt_Tester:
                         st.write(inference_time)
                                          
 if __name__ == "__main__":
-    prompt_tester = Prompt_Tester()
+    prompt_tester = PromptTester()
     prompt_tester.main()
