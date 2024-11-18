@@ -28,6 +28,8 @@ This tool works with any OpenAI API-compatible LLM server (e.g., sglang, VLLM).
 
 ### 🔄 Test Double Prompt
 
+![test2](readme_imgs/image2.png)
+
 - Compare two different prompt sets side by side
 - View results simultaneously
 - Compare inference times
