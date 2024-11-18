@@ -98,6 +98,13 @@ class PromptTester:
     def main(self):
 
         if st.session_state['compare_prompts']:
+            
+            with st.sidebar :
+                st.header("")
+                st.subheader("Comparing Prompt Models")
+                prompt1_model = st.text_input("Prompt1 Model name",  value="./Qwen2.5-32B-Instruct-AWQ")
+                prompt2_model = st.text_input("Prompt2 Model name",  value="./Qwen2.5-32B-Instruct-AWQ")
+            
             print(st.session_state)
             col1, col2 = st.columns(2)
             
@@ -141,8 +148,6 @@ class PromptTester:
                 st.session_state.human_prompt2_saved = human_prompt2
                 
             if st.button("테스트 실행", key="run_test_double"):
-                print("버튼 클릭함")
-                print(f"버튼 클릭시 {st.session_state}")
                 if not (system_prompt1 and human_prompt1) or not (system_prompt2 and human_prompt2):
                     st.warning("프롬프트를 모두 입력해주세요.")
                     return
@@ -156,8 +161,8 @@ class PromptTester:
                     
                     async def run_completions():
                         tasks = [
-                            llm_response.model_completion(self.model_name, system_prompt1, human_prompt1, self.temperature, self.max_tokens),   
-                            llm_response.model_completion(self.model_name, system_prompt2, human_prompt2, self.temperature, self.max_tokens)
+                            llm_response.model_completion(prompt1_model, system_prompt1, human_prompt1, self.temperature, self.max_tokens),   
+                            llm_response.model_completion(prompt2_model, system_prompt2, human_prompt2, self.temperature, self.max_tokens)
                         ]
                         return await asyncio.gather(*tasks)
                     

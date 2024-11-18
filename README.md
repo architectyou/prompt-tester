@@ -34,6 +34,11 @@ This tool works with any OpenAI API-compatible LLM server (e.g., sglang, VLLM).
 - View results simultaneously
 - Compare inference times
 
+![test3](readme_imgs/image3.png)
+
+- You can compare the models with same prompts like langsmith playground.
+- If you want to use OpenAI Models, Let "BASE_URL" blank and replace the api key with "OPENAI_API_KEY"
+
 ## 🚀 Installation & Usage
 
 1. Install requirements
